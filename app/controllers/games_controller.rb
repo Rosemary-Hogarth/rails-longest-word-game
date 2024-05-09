@@ -1,38 +1,28 @@
-require 'net/http'
-require 'json'
+require 'open-uri'
 
 class GamesController < ApplicationController
-
+  VOWELS = %w(A E I O U)
   #  display a new random grid and a form
   def new
-    grid_size = 10
-    @letters = Array.new(grid_size) { ('A'..'Z').to_a.sample }
+    @letters = Array.new(5) { VOWELS.sample }
+    @letters += Array.new(5) { (('A'..'Z').to_a - VOWELS).sample }
+    @letters.shuffle!
   end
   # form will be submitted (with POST) to the score action.
   def score
-    if @letters.nil?
-      @message = "An error occurred. Please try again later."
-    else
-      word = params[:word].upcase
-      letters = @letters.map(&:upcase)
+      @word = params[:word].upcase
+      @letters = params[:letters].split
+      @included = included?(@word, @letters)
+      @english_word = english_word?(@word)
+  end
 
-      puts "Submitted Word: #{word}"
-      puts "Grid Letters: #{@letters}"
+  def english_word?(word)
+    response = URI.open("https://dictionary.lewagon.com/#{word}")
+    json = JSON.parse(response.read)
+    json['found']
+  end
 
-      uri = URI.parse("https://dictionary.lewagon.com/#{word}")
-      response = Net::HTTP.get_response(uri)
-      json = JSON.parse(response.body)
-      word_found = json['found'] # Assign the result of the operation to a variable
-
-      if word.chars.all? { |letter| letters.include?(letter) }
-        if word_found
-          @message = "Well done!"
-        else
-          @message = "This isn't an English word."
-        end
-      else
-        @message = "These letters are not on the grid."
-      end
-    end
+  def included?(word, letters)
+    word.chars.all? { |letter| letters.include?(letter) }
   end
 end

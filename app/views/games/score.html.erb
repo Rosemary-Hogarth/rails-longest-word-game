@@ -1,4 +1,23 @@
 <div class="container mt-5" style="width:500px; margin: 0 auto; text-align: center;">
 <h1>Result</h1>
-<%= @message %>
+<% if @included %>
+  <% if @english_word %>
+    <p>Well Done!</p>
+  <% else %>
+    <p>Get a dictionary!</p>
+  <% end %>
+<% else %>
+  <p>We can't build that word.</p>
+<% end %>
+
+
+
+<br>
+<%= link_to "Play again", new_path %>
 </div>
+
+<%# - check if word is included
+- if the word is included, check if it's an english word
+- if it's included and english -> congrats message
+- if it is included but it's not english --> sorry, not english
+- if it's not included --> Can't be built messge %>
