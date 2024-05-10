@@ -14,6 +14,16 @@ class GamesController < ApplicationController
       @letters = params[:letters].split
       @included = included?(@word, @letters)
       @english_word = english_word?(@word)
+
+      if @included &&  @english_word
+        @user_score = calculate_score
+        session[:user_score] = @user_score
+      else
+        @user_score = 0
+      end
+  rescue StandardError => e
+    Rails.logger.error "An error occurred while fetching word definition: #{e.message}"
+    @user_score = 0 # Set a default score in case of error
   end
 
   def english_word?(word)
@@ -24,5 +34,9 @@ class GamesController < ApplicationController
 
   def included?(word, letters)
     word.chars.all? { |letter| letters.include?(letter) }
+  end
+
+  def calculate_score
+    @word.length
   end
 end
